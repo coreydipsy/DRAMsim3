@@ -64,20 +64,15 @@ SimpleStats::SimpleStats(const Config& config, int channel_id)
     // Histogram stats
     InitHistoStat("read_latency", "Read request latency (cycles)", 0, 200, 10);
     InitHistoStat("write_latency", "Write cmd latency (cycles)", 0, 200, 10);
-    InitHistoStat("request_latency", "Request latency (cycles)", 0, 200, 10);
     InitHistoStat("interarrival_latency",
                   "Request interarrival latency (cycles)", 0, 100, 10);
 
     // some irregular stats
-    InitStat("average_bandwidth", "calculated", "Average bandwidth (Byte/ns, 1 GB/s = 1024^3/1e9~1.0737 B/ns)");
+    InitStat("average_bandwidth", "calculated", "Average bandwidth");
     InitStat("total_energy", "calculated", "Total energy (pJ)");
     InitStat("average_power", "calculated", "Average power (mW)");
     InitStat("average_read_latency", "calculated",
              "Average read request latency (cycles)");
-    InitStat("average_write_latency", "calculated",
-             "Average write cmd latency (cycles)");
-    InitStat("average_request_latency", "calculated",
-            "Average mem request latency (cycles)");
     InitStat("average_interarrival", "calculated",
              "Average request interarrival latency (cycles)");
 }
@@ -474,10 +469,6 @@ void SimpleStats::UpdateFinalStats() {
     // calculated_["average_read_latency"] = GetHistoAvg("read_latency");
     calculated_["average_read_latency"] =
         GetHistoAvg(histo_counts_.at("read_latency"));
-    calculated_["average_write_latency"] =
-        GetHistoAvg(histo_counts_.at("write_latency"));
-    calculated_["average_request_latency"] =
-        GetHistoAvg(histo_counts_.at("request_latency"));
     calculated_["average_interarrival"] =
         GetHistoAvg(histo_counts_.at("interarrival_latency"));
 

@@ -46,3 +46,13 @@ release
 
 # IDEs / Editors
 .vscode/
+
+# ECE511 traces
+/ece511mp3-traces/
+*.trace
+*.trace.txt
+*.pf.trace.txt
+
+# ECE511 traces
+/ece511mp3-traces/
+/ece511mp3-traces.tar.gz

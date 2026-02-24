@@ -1,0 +1,41 @@
+#### FFT ####
+
+## Open Page
+./build/dramsim3main ./ECE511FA22MP3_OpenPage.ini -c 61702030 -t ./ece511mp3-traces/converted_FFT.trace -o ./OpenPage/FFT
+
+## Close Page
+./build/dramsim3main ./ECE511FA22MP3_ClosePage.ini -c 61702030 -t ./ece511mp3-traces/converted_FFT.trace -o ./ClosePage/FFT
+
+#### LU ####
+
+## Open Page
+./build/dramsim3main ./ECE511FA22MP3_OpenPage.ini -c 23582644 -t ./ece511mp3-traces/converted_LU.trace -o ./OpenPage/LU
+
+## Close Page
+./build/dramsim3main ./ECE511FA22MP3_ClosePage.ini -c 23582644 -t ./ece511mp3-traces/converted_LU.trace -o ./ClosePage/LU
+
+#### RADIX ####
+
+## Open Page
+./build/dramsim3main ./ECE511FA22MP3_OpenPage.ini -c 22930777 -t ./ece511mp3-traces/converted_RADIX.trace -o ./OpenPage/RADIX
+
+## Close Page
+./build/dramsim3main ./ECE511FA22MP3_ClosePage.ini -c 22930777 -t ./ece511mp3-traces/converted_RADIX.trace -o ./ClosePage/RADIX
+
+
+
+
+
+### Example
+
+./build/dramsim3main configs/DDR4_8Gb_x8_3200.ini -c 100000 -t tests/example.trace -o ./
+
+
+
+### Convert freq
+
+./parse_gem5_trace.py --gem5_trace_file ./ece511mp3-traces/RADIX.trace.txt --dramsim3_trace_file ./ece511mp3-traces/converted_RADIX.trace --dramsim3_tCK 0.94
+
+./parse_gem5_trace.py --gem5_trace_file ./ece511mp3-traces/FFT.trace.txt --dramsim3_trace_file ./ece511mp3-traces/converted_FFT.trace --dramsim3_tCK 0.94
+
+./parse_gem5_trace.py --gem5_trace_file ./ece511mp3-traces/LU.trace.txt --dramsim3_trace_file ./ece511mp3-traces/converted_LU.trace --dramsim3_tCK 0.94
