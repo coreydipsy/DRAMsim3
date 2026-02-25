@@ -45,10 +45,15 @@ Address Config::AddressMapping(uint64_t hex_addr) const {
     int co = (c2 << 2) | c1;
 
     // (ba and bg) XOR addr[22:19]
+    // can't hardcode it becuase bg width is not 2
+    int bg_width = LogBase2(bankgroups);
+    int bg_local_mask = (1 << bg_width) - 1;
+
+
     int xb = (hex_addr >> xb_pos) & xb_mask;
     xb = (xb ^ (hex_addr >> (19 - shift_bits))) & xb_mask; // xor with [22:19], take 4 bits
-    int bg = xb & 3; // lower 2 bits is bg
-    int ba = xb >> 2; // higher 2 bits is ba
+    int bg = xb & bg_local_mask; // lower 2 bits is bg
+    int ba = xb >> bg_width; // higher 2 bits is ba
 
 
     return Address(channel, rank, bg, ba, ro, co);
@@ -373,13 +378,14 @@ void Config::SetAddressMapping() {
     field_widths["ra"] = LogBase2(ranks);
     // field_widths["bg"] = LogBase2(bankgroups);
     // field_widths["ba"] = LogBase2(banks_per_group);
+    field_widths["xb"] = LogBase2(bankgroups) + LogBase2(banks_per_group); // width of bank per groups + bank
     field_widths["ro"] = LogBase2(rows);
     // field_widths["co"] = actual_col_bits;
 
     // part 2 added code: sperate column into lower and higher bits, also add the field of xor bank and bank group with cache tag bits
     field_widths["c1"] = 2; // width of the lower 2 bits of column
     field_widths["c2"] = actual_col_bits - 2; // width of the higher bits of column
-    field_widths["xb"] = LogBase2(bankgroups) + LogBase2(banks_per_group); // width of bank per groups + bank
+    
 
 
     if (address_mapping.size() != 12) {
