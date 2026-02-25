@@ -52,8 +52,8 @@ class Config {
 
     // Address mapping numbers
     int shift_bits;
-    int ch_pos, ra_pos, bg_pos, ba_pos, ro_pos, co_pos;
-    uint64_t ch_mask, ra_mask, bg_mask, ba_mask, ro_mask, co_mask;
+    int ch_pos, ra_pos, bg_pos, ba_pos, ro_pos, co_pos, c1_pos, c2_pos, xb_pos;
+    uint64_t ch_mask, ra_mask, bg_mask, ba_mask, ro_mask, co_mask, c1_mask, c2_mask, xb_mask;
 
     // Generic DRAM timing parameters
     double tCK;
