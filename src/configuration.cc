@@ -34,8 +34,8 @@ Address Config::AddressMapping(uint64_t hex_addr) const {
     hex_addr >>= shift_bits;
     int channel = (hex_addr >> ch_pos) & ch_mask;
     int rank = (hex_addr >> ra_pos) & ra_mask;
-    // int bg = (hex_addr >> bg_pos) & bg_mask;
-    // int ba = (hex_addr >> ba_pos) & ba_mask;
+    int bg = (hex_addr >> bg_pos) & bg_mask;
+    int ba = (hex_addr >> ba_pos) & ba_mask;
     int ro = (hex_addr >> ro_pos) & ro_mask;
     // int co = (hex_addr >> co_pos) & co_mask;
 
@@ -45,10 +45,13 @@ Address Config::AddressMapping(uint64_t hex_addr) const {
     int co = (c2 << 2) | c1;
 
     // (ba and bg) XOR addr[22:19]
-    int xb = (hex_addr >> xb_pos) & xb_mask;
-    xb = (xb ^ (hex_addr >> (19 - shift_bits))) & xb_mask; // xor with [22:19], take 4 bits
-    int bg = xb & 3; // lower 2 bits is bg
-    int ba = xb >> 2; // higher 2 bits is ba
+    // int xb = (hex_addr >> xb_pos) & xb_mask;
+    // xb = (xb ^ (hex_addr >> (19 - shift_bits))) & xb_mask; // xor with [22:19], take 4 bits
+    // int bg = xb & 3; // lower 2 bits is bg
+    // int ba = xb >> 2; // higher 2 bits is ba
+
+    bg = bg ^ ((hex_addr >> (19 - shift_bits)) & 3); // xor with [20:19], take 2 bits
+    ba = ba ^ ((hex_addr >> (21 - shift_bits)) & 3); // xor with [22:21], take 2 bits
 
 
     return Address(channel, rank, bg, ba, ro, co);
@@ -371,18 +374,18 @@ void Config::SetAddressMapping() {
     std::map<std::string, int> field_widths;
     field_widths["ch"] = LogBase2(channels);
     field_widths["ra"] = LogBase2(ranks);
-    // field_widths["bg"] = LogBase2(bankgroups);
-    // field_widths["ba"] = LogBase2(banks_per_group);
+    field_widths["bg"] = LogBase2(bankgroups);
+    field_widths["ba"] = LogBase2(banks_per_group);
     field_widths["ro"] = LogBase2(rows);
     // field_widths["co"] = actual_col_bits;
 
     // part 2 added code: sperate column into lower and higher bits, also add the field of xor bank and bank group with cache tag bits
     field_widths["c1"] = 2; // width of the lower 2 bits of column
     field_widths["c2"] = actual_col_bits - 2; // width of the higher bits of column
-    field_widths["xb"] = LogBase2(bankgroups) + LogBase2(banks_per_group); // width of bank per groups + bank
+    // field_widths["xb"] = LogBase2(bankgroups) + LogBase2(banks_per_group); // width of bank per groups + bank
 
 
-    if (address_mapping.size() != 12) {
+    if (address_mapping.size() != 14) {
         std::cerr << "Unknown address mapping (6 fields each 2 chars required)"
                   << std::endl;
         AbruptExit(__FILE__, __LINE__);
@@ -411,27 +414,27 @@ void Config::SetAddressMapping() {
 
     ch_pos = field_pos.at("ch");
     ra_pos = field_pos.at("ra");
-    // bg_pos = field_pos.at("bg");
-    // ba_pos = field_pos.at("ba");
+    bg_pos = field_pos.at("bg");
+    ba_pos = field_pos.at("ba");
     ro_pos = field_pos.at("ro");
     // co_pos = field_pos.at("co");
 
     // part 2 added code
     c1_pos = field_pos.at("c1");
     c2_pos = field_pos.at("c2");
-    xb_pos = field_pos.at("xb");
+    // xb_pos = field_pos.at("xb");
 
     ch_mask = (1 << field_widths.at("ch")) - 1;
     ra_mask = (1 << field_widths.at("ra")) - 1;
-    // bg_mask = (1 << field_widths.at("bg")) - 1;
-    // ba_mask = (1 << field_widths.at("ba")) - 1;
+    bg_mask = (1 << field_widths.at("bg")) - 1;
+    ba_mask = (1 << field_widths.at("ba")) - 1;
     ro_mask = (1 << field_widths.at("ro")) - 1;
     // co_mask = (1 << field_widths.at("co")) - 1;
 
     // part 2 added code
     c1_mask = (1 << field_widths.at("c1")) - 1;
     c2_mask = (1 << field_widths.at("c2")) - 1;
-    xb_mask = (1 << field_widths.at("xb")) - 1;
+    // xb_mask = (1 << field_widths.at("xb")) - 1;
 
 }
 
