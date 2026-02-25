@@ -1,8 +1,8 @@
 diff --git a/src/configuration.cc b/src/configuration.cc
-index 297692d..01a5ddf 100644
+index 297692d..eaec760 100644
 --- a/src/configuration.cc
 +++ b/src/configuration.cc
-@@ -37,7 +37,23 @@ Address Config::AddressMapping(uint64_t hex_addr) const {
+@@ -37,7 +37,28 @@ Address Config::AddressMapping(uint64_t hex_addr) const {
      int bg = (hex_addr >> bg_pos) & bg_mask;
      int ba = (hex_addr >> ba_pos) & ba_mask;
      int ro = (hex_addr >> ro_pos) & ro_mask;
@@ -14,20 +14,25 @@ index 297692d..01a5ddf 100644
 +    int c2 = (hex_addr >> c2_pos) & c2_mask; // higher bits of column, but remove the last 2 bits of c1
 +    int co = (c2 << 2) | c1;
 +
-+    // (ba and bg) XOR addr[22:19]
++    // // (ba and bg) XOR addr[22:19]
++    // // can't hardcode it becuase bg width is not 2
++    // int bg_width = LogBase2(bankgroups);
++    // int bg_local_mask = (1 << bg_width) - 1;
++
++
 +    // int xb = (hex_addr >> xb_pos) & xb_mask;
 +    // xb = (xb ^ (hex_addr >> (19 - shift_bits))) & xb_mask; // xor with [22:19], take 4 bits
-+    // int bg = xb & 3; // lower 2 bits is bg
-+    // int ba = xb >> 2; // higher 2 bits is ba
++    // int bg = xb & bg_local_mask; // lower 2 bits is bg
++    // int ba = xb >> bg_width; // higher 2 bits is ba
 +
-+    bg = bg ^ ((hex_addr >> (19 - shift_bits)) & 3); // xor with [20:19], take 2 bits
-+    ba = ba ^ ((hex_addr >> (21 - shift_bits)) & 3); // xor with [22:21], take 2 bits
++    bg = bg ^ ((hex_addr >> (19 - shift_bits)) & bg_mask); // xor with [20:19], take 2 bits
++    ba = ba ^ ((hex_addr >> (21 - shift_bits)) & ba_mask); // xor with [22:21], take 2 bits
 +
 +
      return Address(channel, rank, bg, ba, ro, co);
  }
  
-@@ -347,6 +363,8 @@ void Config::InitTimingParams() {
+@@ -347,6 +368,8 @@ void Config::InitTimingParams() {
  void Config::SetAddressMapping() {
      // memory addresses are byte addressable, but each request comes with
      // multiple bytes because of bus width, and burst length
@@ -36,25 +41,25 @@ index 297692d..01a5ddf 100644
      request_size_bytes = bus_width / 8 * BL;
      shift_bits = LogBase2(request_size_bytes);
      int col_low_bits = LogBase2(BL);
-@@ -359,9 +377,15 @@ void Config::SetAddressMapping() {
+@@ -359,9 +382,15 @@ void Config::SetAddressMapping() {
      field_widths["bg"] = LogBase2(bankgroups);
      field_widths["ba"] = LogBase2(banks_per_group);
      field_widths["ro"] = LogBase2(rows);
 -    field_widths["co"] = actual_col_bits;
 +    // field_widths["co"] = actual_col_bits;
- 
--    if (address_mapping.size() != 12) {
++
 +    // part 2 added code: sperate column into lower and higher bits, also add the field of xor bank and bank group with cache tag bits
 +    field_widths["c1"] = 2; // width of the lower 2 bits of column
 +    field_widths["c2"] = actual_col_bits - 2; // width of the higher bits of column
 +    // field_widths["xb"] = LogBase2(bankgroups) + LogBase2(banks_per_group); // width of bank per groups + bank
 +
-+
+ 
+-    if (address_mapping.size() != 12) {
 +    if (address_mapping.size() != 14) {
          std::cerr << "Unknown address mapping (6 fields each 2 chars required)"
                    << std::endl;
          AbruptExit(__FILE__, __LINE__);
-@@ -393,14 +417,25 @@ void Config::SetAddressMapping() {
+@@ -393,14 +422,25 @@ void Config::SetAddressMapping() {
      bg_pos = field_pos.at("bg");
      ba_pos = field_pos.at("ba");
      ro_pos = field_pos.at("ro");

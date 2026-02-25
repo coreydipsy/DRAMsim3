@@ -44,14 +44,19 @@ Address Config::AddressMapping(uint64_t hex_addr) const {
     int c2 = (hex_addr >> c2_pos) & c2_mask; // higher bits of column, but remove the last 2 bits of c1
     int co = (c2 << 2) | c1;
 
-    // (ba and bg) XOR addr[22:19]
+    // // (ba and bg) XOR addr[22:19]
+    // // can't hardcode it becuase bg width is not 2
+    // int bg_width = LogBase2(bankgroups);
+    // int bg_local_mask = (1 << bg_width) - 1;
+
+
     // int xb = (hex_addr >> xb_pos) & xb_mask;
     // xb = (xb ^ (hex_addr >> (19 - shift_bits))) & xb_mask; // xor with [22:19], take 4 bits
-    // int bg = xb & 3; // lower 2 bits is bg
-    // int ba = xb >> 2; // higher 2 bits is ba
+    // int bg = xb & bg_local_mask; // lower 2 bits is bg
+    // int ba = xb >> bg_width; // higher 2 bits is ba
 
-    bg = bg ^ ((hex_addr >> (19 - shift_bits)) & 3); // xor with [20:19], take 2 bits
-    ba = ba ^ ((hex_addr >> (21 - shift_bits)) & 3); // xor with [22:21], take 2 bits
+    bg = bg ^ ((hex_addr >> (19 - shift_bits)) & bg_mask); // xor with [20:19], take 2 bits
+    ba = ba ^ ((hex_addr >> (21 - shift_bits)) & ba_mask); // xor with [22:21], take 2 bits
 
 
     return Address(channel, rank, bg, ba, ro, co);
