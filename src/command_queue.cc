@@ -34,6 +34,8 @@ CommandQueue::CommandQueue(int channel_id, const Config& config,
 }
 
 Command CommandQueue::GetCommandToIssue() {
+    Command default_command; // if no read or write then use this
+    int default_queue_index = -1;
     for (int i = 0; i < num_queues_; i++) {
         auto& queue = GetNextQueue();
         // if we're refresing, skip the command queues that are involved
@@ -43,14 +45,28 @@ Command CommandQueue::GetCommandToIssue() {
             }
         }
         auto cmd = GetFirstReadyInQueue(queue);
-        if (cmd.IsValid()) {
-            if (cmd.IsReadWrite()) {
-                EraseRWCommand(cmd);
-            }
+        if (!cmd.IsValid()) {
+            continue;
+        }
+        
+        // check if it is read/write, then we issue it first
+        if (cmd.IsReadWrite()) {
+            EraseRWCommand(cmd);
             return cmd;
+        } 
+
+        // if not read write, set the default to the first one we see that is valid, the original case
+        if (!default_command.IsValid()) {
+            default_command = cmd;
+            default_queue_index = queue_idx_;
         }
     }
-    return Command();
+
+    // return default
+    if (default_command.IsValid()) { 
+        queue_idx_ = default_queue_index;
+    }
+    return default_command;
 }
 
 Command CommandQueue::FinishRefresh() {
@@ -99,9 +115,10 @@ bool CommandQueue::ArbitratePrecharge(const CMDIterator& cmd_it,
         }
     }
 
+    // changing to 8 becuase 4 might be too small, keeping it because I see improvement
     bool rowhit_limit_reached =
         channel_state_.RowHitCount(cmd.Rank(), cmd.Bankgroup(), cmd.Bank()) >=
-        4;
+        8;
     if (!pending_row_hits_exist || rowhit_limit_reached) {
         simple_stats_.Increment("num_ondemand_pres");
         return true;

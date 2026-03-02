@@ -208,23 +208,45 @@ void Controller::ScheduleTransaction() {
     std::vector<Transaction> &queue =
         is_unified_queue_ ? unified_queue_
                           : write_draining_ > 0 ? write_buffer_ : read_queue_;
+    auto default_transaction = queue.end();
+    auto row_hit_transaction = queue.end();
     for (auto it = queue.begin(); it != queue.end(); it++) {
         auto cmd = TransToCommand(*it);
-        if (cmd_queue_.WillAcceptCommand(cmd.Rank(), cmd.Bankgroup(),
+
+        if (!cmd_queue_.WillAcceptCommand(cmd.Rank(), cmd.Bankgroup(),
                                          cmd.Bank())) {
-            if (!is_unified_queue_ && cmd.IsWrite()) {
-                // Enforce R->W dependency
-                if (pending_rd_q_.count(it->addr) > 0) {
-                    write_draining_ = 0;
-                    break;
-                }
-                write_draining_ -= 1;
-            }
-            cmd_queue_.AddCommand(cmd);
-            queue.erase(it);
+            continue;
+        }
+
+        if (default_transaction == queue.end()){ // the first accessible one
+            default_transaction = it;
+        }
+
+        if (channel_state_.OpenRow(cmd.Rank(), cmd.Bankgroup(), cmd.Bank()) == cmd.Row()){ // check if there is a row hit
+            row_hit_transaction = it;
             break;
         }
     }
+
+    if (row_hit_transaction == queue.end()){ // no row hit found rip, fallback to the original
+        row_hit_transaction = default_transaction;
+    }
+
+    if(row_hit_transaction != queue.end()){
+        auto cmd = TransToCommand(*row_hit_transaction);
+        if (!is_unified_queue_ && cmd.IsWrite()) {
+                // Enforce R->W dependency
+                if (pending_rd_q_.count(row_hit_transaction->addr) > 0) {
+                    write_draining_ = 0;
+                    return;
+                }
+                write_draining_ -= 1;
+        }
+        cmd_queue_.AddCommand(cmd);
+        queue.erase(row_hit_transaction);
+
+    }
+    
 }
 
 void Controller::IssueCommand(const Command &cmd) {

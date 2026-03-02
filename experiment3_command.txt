@@ -1,0 +1,18 @@
+######## FFT ########
+
+## Open Page
+./build/dramsim3main ./ECE511FA22MP3_OpenPage_addmap.ini -c 61702030 -t ./ece511mp3-traces/converted_FFT.trace -o ./Improvement/FFT
+
+######## LU ########
+
+## Open Page
+./build/dramsim3main ./ECE511FA22MP3_OpenPage_addmap.ini -c 23582644 -t ./ece511mp3-traces/converted_LU.trace -o ./Improvement/LU
+
+######## RADIX ########
+
+## Open Page
+./build/dramsim3main ./ECE511FA22MP3_OpenPage_addmap.ini -c 22930777 -t ./ece511mp3-traces/converted_RADIX.trace -o ./Improvement/RADIX
+
+
+
+
