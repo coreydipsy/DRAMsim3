@@ -208,10 +208,6 @@ void Controller::ScheduleTransaction() {
     std::vector<Transaction> &queue =
         is_unified_queue_ ? unified_queue_
                           : write_draining_ > 0 ? write_buffer_ : read_queue_;
-    
-    // can call a stable partition to sort the queue in order to put non pre-fetch to the front
-    std::stable_partition(queue.begin(), queue.end(),
-                      [](const Transaction& trans_in_queue) { return !trans_in_queue.is_prefetch; });
     for (auto it = queue.begin(); it != queue.end(); it++) {
         auto cmd = TransToCommand(*it);
         if (cmd_queue_.WillAcceptCommand(cmd.Rank(), cmd.Bankgroup(),
