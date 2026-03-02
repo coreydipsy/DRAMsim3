@@ -1,0 +1,4 @@
+workload,avg_bw_sum,avg_req_lat_avg,row_buffer_hits_sum,avg_power_sum,bank_idle_cycles_sum
+FFT,4.25013,107.359,1970426,1346.368,6315966
+LU,0.1045789,42.85345,33046,875.996,36594041
+RADIX,8.36261,109.984,1274072,1725.931,2147905

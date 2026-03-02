@@ -28,16 +28,21 @@ std::ostream& operator<<(std::ostream& os, const Command& cmd) {
 
 std::ostream& operator<<(std::ostream& os, const Transaction& trans) {
     const std::string trans_type = trans.is_write ? "WRITE" : "READ";
-    os << fmt::format("{:<30} {:>8}", trans.addr, trans_type);
+    const std::string request_type = trans.is_prefetch ? "PF" : "MS";
+    os << fmt::format("{:<30} {:>8} {:>8}", trans.addr, trans_type, request_type);
     return os;
 }
 
 std::istream& operator>>(std::istream& is, Transaction& trans) {
     std::unordered_set<std::string> write_types = {"WRITE", "write", "P_MEM_WR",
                                                    "BOFF"};
+    std::unordered_set<std::string> request_types = {"PF", "pf"}; // either prefetcher or cache miss
+
     std::string mem_op;
-    is >> std::hex >> trans.addr >> mem_op >> std::dec >> trans.added_cycle;
+    std::string request_type;
+    is >> std::hex >> trans.addr >> mem_op >> std::dec >> trans.added_cycle >> request_type;
     trans.is_write = write_types.count(mem_op) == 1;
+    trans.is_prefetch = request_types.count(request_type) == 1;
     return is;
 }
 

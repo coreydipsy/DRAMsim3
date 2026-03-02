@@ -1,0 +1,7 @@
+Page Policy,workload,avg_bw_sum,avg_req_lat_avg,row_buffer_hits_sum,avg_power_sum
+Open,FFT,3.76569,202.3345,1939049,1235.027
+Open,LU,0.1045789,44.3096,34830,857.577
+Open,RADIX,8.04815,176.9525,1505900,1617.312
+Close,FFT,1.124352,1004.77,0,988.971
+Close,LU,0.1042873,211.1000,0,846.084
+Close,RADIX,2.352,553.3095,0,1157.767

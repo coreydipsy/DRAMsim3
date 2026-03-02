@@ -1,0 +1,4 @@
+file,avg_bw_sum,avg_req_lat_avg,row_buffer_hits_sum,avg_power_sum,bank_idle_cycles_sum
+dramsim3.txt,3.76569,202.3345,1939049,1235.027,47177760
+dramsim3.txt,0.1045789,44.3096,34830,857.577,41526400
+dramsim3.txt,8.04815,176.9525,1505900,1617.312,8707366
